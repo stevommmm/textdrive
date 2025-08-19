@@ -6,8 +6,8 @@ import (
 	"go/parser"
 	"go/token"
 	"log"
-	"strconv"
 	"reflect"
+	"strconv"
 
 	"github.com/chromedp/chromedp"
 )

@@ -1,12 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
+	"io"
 	"log"
 	"os"
 	"time"
-	"bufio"
 
 	"github.com/chromedp/chromedp"
 )
@@ -39,6 +40,12 @@ func main() {
 		log.Fatal(err)
 	}
 	defer f.Close()
+
+	if d, err := io.ReadAll(f); err != nil {
+		log.Println(parse(string(d)))
+	}
+
+
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
