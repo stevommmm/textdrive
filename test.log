@@ -1,7 +1,2 @@
-load    Url="https://www.google.com/"
-wait    Selector="body"
-click   Selector="form textarea"
-type    Selector="form textarea"  Text="test"
-sleep   Timeout=3s
-submit  Selector="form"
-wait    Selector="div.main"
+load{Url: "https://example.com/"}
+wait{Selector: "body"}

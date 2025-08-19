@@ -18,6 +18,31 @@ func mustParseDuration(dur string) time.Duration {
 	return d
 }
 
+func resolveAction(name string) chromedp.Action {
+	switch name {
+	case "load":
+		return &RemoteLoad{Timeout: "60s"}
+	case "click":
+		return &RemoteClick{Timeout: "60s"}
+	case "type":
+		return &RemoteType{Timeout: "60s"}
+	case "submit":
+		return &RemoteSubmit{Timeout: "60s"}
+	case "value":
+		return &RemoteValue{Timeout: "60s"}
+	case "wait":
+		return &RemoteWait{Timeout: "60s"}
+	case "scroll":
+		return &RemoteScroll{Timeout: "60s"}
+	case "compare":
+		return &RemoteCompare{Timeout: "60s"}
+	case "sleep":
+		return &Sleep{Timeout: "60s"}
+	default:
+		return &Noop{}
+	}
+}
+
 // Specific implementation of actions
 type RemoteLoad struct {
 	Timeout string
