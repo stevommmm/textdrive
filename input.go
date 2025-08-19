@@ -15,16 +15,16 @@ import (
 func parse(expr string) (chromedp.Action, error) {
 	e, err := parser.ParseExpr(expr)
 	if err != nil {
+		log.Printf("bad: %#v\n", e)
 		return nil, err
 	}
+	log.Printf("ok: %#v\n", e)
 	x, ok := e.(*ast.CompositeLit)
 	if !ok {
 		return nil, fmt.Errorf("Invalid definition found, expected thing{args:value}")
 	}
 	act := resolveAction(x.Type.(*ast.Ident).Name)
 	actref := reflect.ValueOf(act).Elem()
-
-	log.Println(x.Type)
 	for _, v := range x.Elts {
 		f, ok := v.(*ast.KeyValueExpr)
 		if !ok {
@@ -39,7 +39,6 @@ func parse(expr string) (chromedp.Action, error) {
 		if err != nil {
 			return nil, err
 		}
-		log.Println(k.Name, s)
 		fnc := actref.FieldByName(k.Name)
 		if !fnc.IsValid() {
 			return nil, fmt.Errorf("Invalid field given for %q %q=%q", act, k, v)

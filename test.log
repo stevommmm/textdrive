@@ -1,2 +1,4 @@
 load{Url: "https://example.com/"}
-wait{Selector: "body"}
+wait{
+	Selector: "body",
+}
