@@ -1,9 +1,13 @@
-load{Url: "https://iana.org/"}
+load{url: "https://iana.org/"}
 wait{
 	Selector: "body",
 }
 click{Selector: "a[href='/domains']"}
-wait{Timeout: "4s"}
+wait{Timeout: "4s"} // Wait can be a time or selector
 click{Selector: "p > a[href='/domains/special']"}
 wait{Selector: "article > main"}
-screenshot{Name: "capture.png"}
+compare{
+	Selector: "article > main h2:last-of-type",
+	Value: "Other Special-Use Domains",
+}
+screenshot{name: "capture.png"}

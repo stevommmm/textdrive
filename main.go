@@ -12,6 +12,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+// Run a chromedp action and report the duration it took
 func timedRun(ctx context.Context, task chromedp.Action) (error, float64) {
 	start := time.Now()
 	err := chromedp.Run(ctx, task)
@@ -39,6 +40,7 @@ func main() {
 	ctx, cancel := chromedp.NewContext(bctx)
 	defer cancel()
 
+	// Figure out the input, if its a dash use stdin otherwise file
 	var f *os.File
 	if *cliInput == "-" {
 		f = os.Stdin
@@ -51,18 +53,22 @@ func main() {
 		defer fh.Close()
 	}
 
+	// Read each line into a buffer to process, actions can span multiple lines
+	// in which case parse() will tell us to slurp more data via error
 	buf := ""
 	fscan := bufio.NewScanner(f)
 	for fscan.Scan() {
 		buf += fscan.Text()
-		task, err := parse(buf) // Println will add back the final '\n'
+		task, err := parse(buf) // try parse the provided text as go
 		if err != nil {
+			// Special case handler where input spans multiple lines
 			if errors.Is(err, ErrReadMore) {
 				continue
 			}
 			log.Fatalf("Unrecoverable parser error %s\n", err)
 		}
 		buf = ""
+		// Execute the requested action in the open? browser
 		err, secs := timedRun(ctx, task)
 		if err != nil {
 			chromedp.Run(ctx, &Screenshot{Name: "fatal.png"})

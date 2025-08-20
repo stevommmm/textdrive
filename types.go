@@ -181,7 +181,7 @@ type Screenshot struct {
 }
 
 func (s Screenshot) String() string {
-	return "Screenshot"
+	return fmt.Sprintf("screenshot:%q", s.Name)
 }
 
 func (s Screenshot) Do(ctx context.Context) error {
