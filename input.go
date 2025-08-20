@@ -1,24 +1,30 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
+	"go/scanner"
 	"go/token"
-	"log"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/chromedp/chromedp"
 )
 
+var ErrReadMore = errors.New("Read more input")
+
 func parse(expr string) (chromedp.Action, error) {
 	e, err := parser.ParseExpr(expr)
 	if err != nil {
-		log.Printf("bad: %#v\n", e)
+		errs, ok := err.(scanner.ErrorList)
+		if ok && errs.Len() == 1 && strings.HasSuffix(errs[0].Msg, "found 'EOF'") {
+			return nil, ErrReadMore
+		}
 		return nil, err
 	}
-	log.Printf("ok: %#v\n", e)
 	x, ok := e.(*ast.CompositeLit)
 	if !ok {
 		return nil, fmt.Errorf("Invalid definition found, expected thing{args:value}")

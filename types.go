@@ -36,8 +36,10 @@ func resolveAction(name string) chromedp.Action {
 		return &RemoteScroll{Timeout: "60s"}
 	case "compare":
 		return &RemoteCompare{Timeout: "60s"}
-	case "sleep":
-		return &Sleep{Timeout: "60s"}
+	case "record":
+		return &RemoteRecord{Timeout: "10s"}
+	case "screenshot":
+		return &Screenshot{}
 	default:
 		return &Noop{}
 	}
@@ -111,13 +113,24 @@ type RemoteWait struct {
 }
 
 func (s RemoteWait) String() string {
+	if s.Selector == "" {
+		return fmt.Sprintf("wait:for:%q", s.Timeout)
+	}
 	return fmt.Sprintf("wait:on:%q", s.Selector)
 }
 
 func (s RemoteWait) Do(ctx context.Context) error {
+	if s.Selector == "" {
+		time.Sleep(mustParseDuration(s.Timeout))
+		return nil
+	}
 	actionctx, cancel := context.WithTimeout(ctx, mustParseDuration(s.Timeout))
 	defer cancel()
-	return chromedp.WaitVisible(s.Selector, chromedp.ByQuery).Do(actionctx)
+	err := chromedp.WaitVisible(s.Selector, chromedp.ByQuery).Do(actionctx)
+	if err != nil {
+		return err
+	}
+	return chromedp.WaitReady(s.Selector).Do(actionctx)
 }
 
 type RemoteScroll struct {
@@ -163,29 +176,39 @@ func (s Noop) Do(ctx context.Context) error {
 	return nil
 }
 
-type Sleep struct {
-	Timeout string
+type Screenshot struct {
+	Name string
 }
 
-func (s Sleep) String() string {
-	return fmt.Sprintf("sleep:for:%s", s.Timeout)
+func (s Screenshot) String() string {
+	return "Screenshot"
 }
 
-func (s Sleep) Do(ctx context.Context) error {
-	time.Sleep(mustParseDuration(s.Timeout))
+func (s Screenshot) Do(ctx context.Context) error {
+	var buf []byte
+	chromedp.CaptureScreenshot(&buf).Do(ctx)
+	os.WriteFile(s.Name, buf, 0o644)
 	return nil
 }
 
-type Debug struct{}
-
-func (s Debug) String() string {
-	return "debug"
+type RemoteRecord struct {
+	Timeout  string
+	Selector string
 }
 
-func (s Debug) Do(ctx context.Context) error {
-	var buf []byte
-	chromedp.CaptureScreenshot(&buf).Do(ctx)
-	os.WriteFile("debug.png", buf, 0o644)
+func (s RemoteRecord) String() string {
+	return fmt.Sprintf("record:%q", s.Selector)
+}
+
+func (s RemoteRecord) Do(ctx context.Context) error {
+	actionctx, cancel := context.WithTimeout(ctx, mustParseDuration(s.Timeout))
+	defer cancel()
+
+	var val string
+	if err := chromedp.TextContent(s.Selector, &val, chromedp.ByQuery).Do(actionctx); err != nil {
+		return err
+	}
+	fmt.Printf("%q[%q]\n", s.Selector, val)
 	return nil
 }
 

@@ -1,4 +1,9 @@
-load{Url: "https://example.com/"}
+load{Url: "https://iana.org/"}
 wait{
 	Selector: "body",
 }
+click{Selector: "a[href='/domains']"}
+wait{Timeout: "4s"}
+click{Selector: "p > a[href='/domains/special']"}
+wait{Selector: "article > main"}
+screenshot{Name: "capture.png"}
