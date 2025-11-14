@@ -15,18 +15,18 @@ import (
 )
 
 type TestCase struct {
-	ClassName string  `xml:"classname"`
-	Name      string  `xml:"name"`
-	Time      float64 `xml:"time"`
+	ClassName string  `xml:"classname,attr"`
+	Name      string  `xml:"name,attr"`
+	Time      float64 `xml:"time,attr"`
 }
 
 type TestSuites struct {
-	Disabled int     `xml:"disabled"`
-	Failures int     `xml:"failures"`
-	Tests    int     `xml:"tests"`
-	Time     float64 `xml:"time"`
-	Name     string  `xml:"name"`
-	Cases    []TestCase
+	Disabled int        `xml:"disabled,attr"`
+	Failures int        `xml:"failures,attr"`
+	Tests    int        `xml:"tests,attr"`
+	Time     float64    `xml:"time,attr"`
+	Name     string     `xml:"name,attr"`
+	Cases    []TestCase `xml:"testcase"`
 }
 
 // Run a chromedp action and report the duration it took
@@ -76,6 +76,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer xo.Close()
+	xo.Write([]byte(xml.Header))
 	reportencoder := xml.NewEncoder(xo)
 
 	execerr := func() error {
